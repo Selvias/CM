@@ -1,8 +1,10 @@
-#include <iostream>
+#include "sle.hpp"
 
 int main() {
 
-    std::cout << "Hello World!\n";
+    std::ifstream input;
+    input.open("matrix.txt");
 
+    
     return 0;
 }
