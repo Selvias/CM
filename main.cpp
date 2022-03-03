@@ -11,7 +11,9 @@ int main() {
 
     variable *v = procesString(line);
 
-    half_div_method(v, 1, 2);
+    // half_div_method(v, 1, 2);
+
+    hord_method(v, 1, 2);
     
     input.close();
 

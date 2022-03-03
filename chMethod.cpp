@@ -105,14 +105,13 @@ double usr_eps(double a, double b) {
     return (std::abs((b - a)/2));
 }
 
-double answer(variable *v, double a) {
+double comp_f(variable *v, double a) {
     double b = 0;
 
     for (int i = 0; i < n; i++) {
         if (v[i].sign) {
             std::cout << (v[i].coef * (pow(a, v[i].deg))) << std::endl;
             b -= (v[i].coef * (pow(a, v[i].deg)));
-            // std::cout << b;
         }
         else {
             b += (v[i].coef * (pow(a, v[i].deg)));
@@ -120,12 +119,11 @@ double answer(variable *v, double a) {
     }
     b += c;
 
-    // std::cout << " B " << b << std::endl;
     return b;
 }
 
 double mult_f(double a, double b, double c, variable *v) {
-    double fa = answer(v, a) * answer(v, c);
+    double fa = comp_f(v, a) * comp_f(v, c);
     if (fa < 0)
         return a;
     else
@@ -148,4 +146,21 @@ double half_div_method(variable *v, double a, double b) {
         return half_div_method(v, a, C);
     else
         return half_div_method(v, C, b);
+}
+
+double hord_method(variable *v, double a, double b) {
+    double C = (((a * comp_f(v, b)) - (b * comp_f(v, a))) / (comp_f(v, b) - comp_f(v, a)));
+    double u_eps = usr_eps(a, b);
+        std::cout << "-------------------------" << std::endl;
+        std::cout << "C : " << C << std::endl;
+        std::cout << "eps : " << u_eps << std::endl;
+        std::cout << "A : " << a << std::endl;
+        std::cout << "B : " << b << std::endl;
+        std::cout << "-------------------------" << std::endl;
+    if (u_eps < 0.03)
+        return 0;
+    else if (mult_f(a, b, C, v) == a)
+        return hord_method(v, a, C);
+    else
+        return hord_method(v, C, b);
 }
