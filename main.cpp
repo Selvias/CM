@@ -13,8 +13,10 @@ int main() {
 
     // half_div_method(v, 1, 2);
 
-    hord_method(v, 1, 2);
+    // hord_method(v, 1, 2);
     
+    newton_method(v, 1, 2, 0.001);
+
     input.close();
 
     return 0;

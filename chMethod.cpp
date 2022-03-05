@@ -1,10 +1,14 @@
 #include "compLinEq.hpp"
 
+#define dv_f(_x) 3 * _x * _x
+#define dv_f2(_x) 6 * _x
+
 int n = 0;
 double c = 0;
 bool sgn = 0;
 
-
+double xk = 0;
+double xk1 = 0;
 
 void scanFile(std::ifstream *file, std::string *line) {
     while(!(*file).eof()) {
@@ -37,22 +41,6 @@ variable *procesString(std::string line) {
             // std::cout << v[shift].deg << std::endl;
             shift++;
         }
-        // else if (line[i + 1] == 'x') {
-        //     if (line[i] >= 48 && line[i] <= 57) {
-        //         int a = 0;
-        //         while (line[i + a] >= 48 &&  line[i + a] <= 57) {
-        //             t += line[i + a];
-        //             a++;
-        //         }
-        //         i += a - 1;
-        //         std::cout << a << std::endl;
-        //         v[shift].coef = std::stoi(t);
-        //         t = "";
-        //     }
-        //     else
-        //         v[shift].coef = 1;
-        //     // std::cout << "COEF : " << v[shift].coef << std:: endl;
-        // }
         else if (line[i] == 'x')
         {
             // std::cout << i;
@@ -131,7 +119,15 @@ double mult_f(double a, double b, double c, variable *v) {
 
 }
 
-double half_div_method(variable *v, double a, double b) {
+// double dv_f(variable *v, double x, double h) {
+//     return ((comp_f(v, x + h) - comp_f(v, x - h)) / 2 * h);
+// }
+
+// double dv_f2(variable *v, double x, double h) {
+//     return ((comp_f(v, x + h) - 2 * comp_f(v, x) + comp_f(v, x - h)) / h * h);
+// }
+
+double half_div_method(variable *v, double a, double b, double eps) {
     double C = (a + b) / 2;
     double u_eps = usr_eps(a, b);
         std::cout << "-------------------------" << std::endl;
@@ -140,15 +136,15 @@ double half_div_method(variable *v, double a, double b) {
         std::cout << "A : " << a << std::endl;
         std::cout << "B : " << b << std::endl;
         std::cout << "-------------------------" << std::endl;
-    if (u_eps < 0.03)
+    if (u_eps < eps)
         return 0;
     else if (mult_f(a, b, C, v) == a)
-        return half_div_method(v, a, C);
+        return half_div_method(v, a, C, eps);
     else
-        return half_div_method(v, C, b);
+        return half_div_method(v, C, b, eps);
 }
 
-double hord_method(variable *v, double a, double b) {
+double hord_method(variable *v, double a, double b, double eps) {
     double C = (((a * comp_f(v, b)) - (b * comp_f(v, a))) / (comp_f(v, b) - comp_f(v, a)));
     double u_eps = usr_eps(a, b);
         std::cout << "-------------------------" << std::endl;
@@ -157,10 +153,50 @@ double hord_method(variable *v, double a, double b) {
         std::cout << "A : " << a << std::endl;
         std::cout << "B : " << b << std::endl;
         std::cout << "-------------------------" << std::endl;
-    if (u_eps < 0.03)
+    if (u_eps < eps)
         return 0;
     else if (mult_f(a, b, C, v) == a)
-        return hord_method(v, a, C);
+        return hord_method(v, a, C, eps);
     else
-        return hord_method(v, C, b);
+        return hord_method(v, C, b, eps);
+}
+
+double newton_method(variable *v, double a, double b, double eps) {
+    double u_eps = std::abs(b - a);
+        double res_fa = comp_f(v, a);
+        // double res_f2a = dv_f2(v, a, 1);
+        double res_f2a = dv_f2(a);
+        if ((res_fa >= 0 && res_f2a >= 0) || (res_fa < 0 && res_f2a < 0)) {
+            xk = a;
+            // xk1 = (xk - (res_fa / dv_f(v, xk, 1)));
+            xk1 = (xk - (res_fa / dv_f(xk)));
+        }
+        else {
+            xk = b;
+            double t1 = dv_f(xk);
+            double t2 = comp_f(v, b);
+            // xk1 = (xk - ((comp_f(v, b)) / dv_f(v, xk, 0.9637)));
+            xk1 = (xk - (t2 / t1));
+        }
+
+    std::cout << xk1 << std::endl;
+    // std::cout << (comp_f(v, b)) << std::endl;
+    // std::cout << dv_f(v, xk, 0.9637) << std::endl;
+    // std::cout << dv_f2(v, xk, 0.9637) << std::endl;
+
+    int i = 2;
+    double t1 = 0;
+    double t2 = 0;
+
+    do {
+        xk = xk1;
+        t1 = dv_f(xk);
+        t2 = comp_f(v, xk);
+        // xk1 = (xk - ((comp_f(v, xk)) / dv_f(v, xk, 0.9637)));
+        xk1 = (xk - (t2 / t1));
+        std::cout << "X" << i << " : " << xk1 << std::endl;
+        u_eps = std::abs(xk1 - xk);
+    } while (u_eps > eps);
+
+    return 0;
 }
